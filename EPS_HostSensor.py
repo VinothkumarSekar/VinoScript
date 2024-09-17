@@ -1,0 +1,80 @@
+import requests
+import ssl
+from pyVim.connect import SmartConnect, Disconnect
+from pyVmomi import vim
+import re
+
+
+requests.packages.urllib3.disable_warnings()
+
+def handler(context, inputs):
+    vCenterName = inputs["vCenterName"]
+    Affected_host = inputs["esxi_host"]
+    vcenter_user = inputs["vc_user"]
+    vcenter_password = inputs["vc_pwd"]
+
+
+
+
+    def get_vcenter_session():
+        context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+        context.verify_mode = ssl.CERT_NONE
+        si = SmartConnect(host=vCenterName, 
+                            user=vcenter_user,
+                            pwd=vcenter_password, 
+                            port=443, 
+                            sslContext=context)
+        return si
+
+
+    def get_esxi_hosts(content):
+        container = content.viewManager.CreateContainerView(content.rootFolder, [vim.HostSystem], True)
+        return container.view
+
+
+    def get_esxi_sensor_status(esxi_host):
+        sensor_status = []
+        for sensor in esxi_host.runtime.healthSystemRuntime.systemHealthInfo.numericSensorInfo:
+                # if re.search('.+Temp.+', sensor.healthState.key) :
+                if sensor.healthState.key != 'Green': 
+                    sensor_status.append({
+                        'Sensor': sensor.name,
+                        'Status': sensor.healthState.key
+                        
+                    })
+    
+        return sensor_status
+
+
+    content = get_vcenter_session().RetrieveContent()
+    esxi_hosts = get_esxi_hosts(content)
+
+    
+   
+    for esxi_host in esxi_hosts:
+        if esxi_host.name == Affected_host:
+            print()
+            #print('Report from ESXi Host:', esxi_host.name)
+            header = f'Report from ESXi Host: {esxi_host.name}'
+            body = f"<p><strong>Report from ESXi Host: {esxi_host.name}&nbsp;</strong></p>"
+            print(header)
+            sensor_status = get_esxi_sensor_status(esxi_host)
+            if sensor_status == []:
+                #print("All the sensors are green")
+                body += "All the sensors are green"
+            else:     
+                for sensor in sensor_status:
+                    senName = sensor['Sensor'] 
+                    senStatus = sensor['Status']
+                    #print (f' {senName} is in state: {senStatus}')
+                    stat = f'{senName} is in state: {senStatus}' + '\n'
+                    body += stat
+            print (body)        
+                # print('Sensor:', sensor['Sensor'])
+                # print('Status:', sensor['Status'])
+            print()
+
+
+    Disconnect(get_vcenter_session())
+
+    return body
