@@ -2,3 +2,37 @@ This impacts VCF4.5 customers and upgrades.
 NSX-T cannot be upgraded with stretch cluster from LCM.
 Upgrade flow: Un-stretch - upgrade NSXT part - stretch again
 
+======================
+
+
+Below are the Tables in Operations Manager Database
+operationsmanager-# \dt
+List of relations
+Schema | Name | Type | Owner
+--------+-----------------------+-------+--------
+public | databasechangelog | table | opsmgr
+public | databasechangeloglock | table | opsmgr
+public | execution | table | opsmgr
+public | execution_to_task | table | opsmgr
+public | processing_context | table | opsmgr
+public | processing_task | table | opsmgr
+public | task | table | opsmgr
+public | vault_cipher_version | table | opsmgr
+public | vault_secret | table | opsmgr
+(9 rows)
+Below are the Tables in Sddc_manager_ui Database
+sddc_manager_ui-# \dt
+List of relations
+Schema | Name | Type | Owner
+--------+----------------------+-------+-------
+public | persistent_state | table | vcfui
+public | session | table | vcfui
+public | user_preferences | table | vcfui
+public | workflow_config_data | table | vcfui
+(4 rows)
+Examples.
+To count the Number of Hosts in VCF run the below Query
+
+===============
+
+
