@@ -1,0 +1,4 @@
+This impacts VCF4.5 customers and upgrades.
+NSX-T cannot be upgraded with stretch cluster from LCM.
+Upgrade flow: Un-stretch - upgrade NSXT part - stretch again
+
